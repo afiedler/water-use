@@ -14,6 +14,10 @@ const JulianDate = require('cesium/Source/Core/JulianDate');
 const Clock = require('cesium/Source/Core/Clock');
 const ClockRange = require('cesium/Source/Core/ClockRange');
 const ClockStep = require('cesium/Source/Core/ClockStep');
+const SkyBox = require('cesium/Source/Scene/Skybox');
+
+//require('event-emitter-mixin');
+require('./gamepad-api');
 
 
 /**
@@ -62,9 +66,9 @@ const ClockStep = require('cesium/Source/Core/ClockStep');
 //Create a Viewer instances and add the DataSource.
 let dataSource = new WebGLGlobeDataSource();
 let clock = new Clock({
-  startTime : JulianDate.fromIso8601("2000-01-01"),
-  currentTime : JulianDate.fromIso8601("2000-01-01"),
-  stopTime : JulianDate.fromIso8601("2050-01-01"),
+  startTime : JulianDate.fromIso8601("2017-01-01"),
+  currentTime : JulianDate.fromIso8601("2017-01-01"),
+  stopTime : JulianDate.fromIso8601("2025-01-01"),
   clockRange : ClockRange.LOOP_STOP,
   clockStep : ClockStep.SYSTEM_CLOCK_MULTIPLIER,
   multiplier : 15768000
@@ -78,9 +82,76 @@ let viewer = new Viewer('cesiumContainer', {
   clock
 });
 viewer.scene.sun.shadows = false;
-viewer.scene.sun.show =false;
-viewer.scene.moon.show =false;
+viewer.scene.sun.show = false;
+viewer.scene.moon.show = false;
 //Set bounds of our simulation
+
+//GAME PAD
+var Gamepad = window.Gamepad;
+var scene = viewer.scene;
+var canvas = viewer.canvas;
+canvas.setAttribute('tabindex', '0'); // needed to put focus on the canvas
+canvas.onclick = function() {
+  canvas.focus();
+};
+var ellipsoid = scene.globe.ellipsoid;
+viewer.clock.onTick.addEventListener(function(clock) {
+  var camera = viewer.camera;
+
+
+
+  // Change movement speed based on the distance of the camera to the surface of the ellipsoid.
+  var cameraHeight = ellipsoid.cartesianToCartographic(camera.position).height;
+  var moveRate = cameraHeight / 500000.0;
+  //console.log(moveRate);
+  // Joysticks
+  // ---------
+
+  Gamepad.on('joystick:left', function (direction) {
+    // console.log('move left joystick to', direction);
+    if(direction.up){
+      camera.moveRight(moveRate);
+
+
+    }
+    if(direction.down){
+      camera.moveLeft(moveRate);
+    }
+
+    if(direction.left){
+      camera.moveForward(moveRate);
+    }
+
+    if(direction.right){
+      camera.moveBackward(moveRate);
+    }
+
+
+
+  });
+  // Special
+  // -------
+
+  Gamepad.on('special:select', function () {
+    console.warn('click select');
+    camera.position = new Cesium.Cartesian3();
+    camera.direction = Cesium.Cartesian3.negate(Cesium.Cartesian3.UNIT_Z, new Cesium.Cartesian3());
+    camera.up = Cesium.Cartesian3.clone(Cesium.Cartesian3.UNIT_Y);
+    camera.frustum.fov = Cesium.Math.PI_OVER_THREE;
+    camera.frustum.near = 1.0;
+    camera.frustum.far = 2.0;
+  });
+
+  Gamepad.on('special:start', function () {
+    console.warn('click start');
+    camera.position = new Cesium.Cartesian3();
+    camera.direction = Cesium.Cartesian3.negate(Cesium.Cartesian3.UNIT_Z, new Cesium.Cartesian3());
+    camera.up = Cesium.Cartesian3.clone(Cesium.Cartesian3.UNIT_Y);
+    camera.frustum.fov = Cesium.Math.PI_OVER_THREE;
+    camera.frustum.near = 1.0;
+    camera.frustum.far = 2.0;
+  });
+});
 
 //Make sure viewer is at the desired time.
 
