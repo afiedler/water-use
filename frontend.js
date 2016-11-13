@@ -62,20 +62,25 @@ const ClockStep = require('cesium/Source/Core/ClockStep');
 //Create a Viewer instances and add the DataSource.
 let dataSource = new WebGLGlobeDataSource();
 let clock = new Clock({
-  startTime : JulianDate.fromIso8601("2015-01-01"),
-  currentTime : JulianDate.fromIso8601("2016-01-01"),
-  stopTime : JulianDate.fromIso8601("2017-01-01"),
+  startTime : JulianDate.fromIso8601("2000-01-01"),
+  currentTime : JulianDate.fromIso8601("2000-01-01"),
+  stopTime : JulianDate.fromIso8601("2050-01-01"),
   clockRange : ClockRange.LOOP_STOP,
-  clockStep : ClockStep.SYSTEM_CLOCK_MULTIPLIER
+  clockStep : ClockStep.SYSTEM_CLOCK_MULTIPLIER,
+  multiplier : 15768000
 });
 let viewer = new Viewer('cesiumContainer', {
   animation : true,
   timeline : true,
+  skyBox : new SkyBox({ show:false }),
+  vrButton : true,
+  shadows : false,
   clock
 });
+viewer.scene.sun.shadows = false;
+viewer.scene.sun.show =false;
+viewer.scene.moon.show =false;
 //Set bounds of our simulation
-let start = JulianDate.fromIso8601('2015-01-01');
-let stop = JulianDate.fromIso8601('2017-01-01');
 
 //Make sure viewer is at the desired time.
 
